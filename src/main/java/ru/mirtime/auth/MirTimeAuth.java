@@ -757,7 +757,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             Bukkit.getConsoleSender().sendMessage(color("&c  [MirTimeAuth] Ошибка мини-сайта: " + e.getMessage()));
         }
     }
-
     private void handleWebRequest(HttpExchange ex) throws IOException {
         String notice = "";
         String loggedUser = null;
@@ -771,7 +770,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             String pass = form.getOrDefault("password", "");
 
             if (!db.contains("users." + user + ".hash")) {
-                notice = "<div class='alert err'>✖ Игрок с таким ником не зарегистрирован на сервере!</div>";
+                notice = "<div class='alert err'>✖ Игрок с таким ником не зарегистрирован!</div>";
             } else {
                 String salt = db.getString("users." + user + ".salt", "");
                 if (!db.getString("users." + user + ".hash", "").equals(hashPassword(pass, salt))) {
@@ -813,7 +812,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                             savedPass = np;
                             notice = "<div class='alert ok'>✔ Игровой пароль успешно обновлён!</div>";
                         } else {
-                            notice = "<div class='alert err'>✖ Длина пароля должна быть от " + min + " до 32 символов.</div>";
+                            notice = "<div class='alert err'>✖ Длина пароля: от " + min + " до 32 символов.</div>";
                         }
                     } else if ("kick_self".equals(action)) {
                         String rName = db.getString("users." + user + ".name", user);
@@ -826,7 +825,12 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 }
             }
         }
-        String baseCss = "<style>@import url('https://googleapis.com');"
+
+        // ЗАМЕНИ ЭТИ 3 СТРОКИ НА ДЕКОДИРОВАННЫЕ ИЗ BASE64:
+        String mcHost = "https://mc-heads.net";
+        String qrHost = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=";
+        String fontUrl = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap";
+        String baseCss = "<style>@import url('" + fontUrl + "');"
                 + "*{box-sizing:border-box}body{margin:0;font-family:'Montserrat',sans-serif;background:#050811;color:#eef6ff;min-height:100vh;"
                 + "display:flex;justify-content:center;align-items:center;padding:20px;"
                 + "background-image:radial-gradient(circle at 50% 0%,rgba(0,119,255,0.28),transparent 60%),"
@@ -853,12 +857,12 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                     + "<title>MIR-TIME | Авторизация</title>" + baseCss + "</head><body>"
                     + "<div class='panel' style='max-width:410px;text-align:center;'>"
                     + "<div style='display:inline-block;padding:4px;border-radius:18px;background:linear-gradient(135deg,#0055ff,#00ff66);margin-bottom:12px;'>"
-                    + "<img id='av' src='https://mc-heads.net' width='72' height='72' style='display:block;border-radius:14px;background:#080e1c;'></div>"
+                    + "<img id='av' src='" + mcHost + "/avatar/Steve/72' width='72' height='72' style='display:block;border-radius:14px;background:#080e1c;'></div>"
                     + "<h1 class='brand'>⚡ MIR-TIME</h1>"
                     + "<p style='color:#8aa4c8;font-size:12px;margin:6px 0 20px;'>Единый центр безопасности аккаунта</p>"
                     + notice
                     + "<form method='post'><input type='hidden' name='action' value='login'>"
-                    + "<input type='text' name='username' placeholder='Введите ваш игровой ник' oninput=\"document.getElementById('av').src='https://mc-heads.net'+(this.value||'Steve')+'/72'\" required>"
+                    + "<input type='text' name='username' placeholder='Введите ваш игровой ник' oninput=\"document.getElementById('av').src='" + mcHost + "/avatar/'+(this.value||'Steve')+'/72'\" required>"
                     + "<input type='password' name='password' placeholder='Введите ваш игровой пароль' required>"
                     + "<button class='btn green' type='submit'>Войти в систему ➔</button></form>"
                     + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);font-size:11px;color:#637fa3;'>"
@@ -882,7 +886,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 + "<input type='hidden' name='password' value='" + escapeHtml(savedPass) + "'>";
 
         String otpUri = "otpauth://totp/MIR-TIME:" + URLEncoder.encode(realName, StandardCharsets.UTF_8) + "?secret=" + secret + "&issuer=MIR-TIME";
-        String qrUrl = "https://qrserver.com" + URLEncoder.encode(otpUri, StandardCharsets.UTF_8);
+        String qrUrl = qrHost + URLEncoder.encode(otpUri, StandardCharsets.UTF_8);
 
         String twoFaCard = totpEnabled
                 ? "<div style='background:rgba(0,255,102,0.1);border:1px solid rgba(0,255,102,0.3);padding:10px 14px;border-radius:10px;margin-bottom:10px;color:#00ff66;font-size:13px;font-weight:700;'>"
@@ -895,6 +899,36 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='enable_2fa'>"
                 + "<input type='text' name='code' placeholder='Введите 6 цифр из приложения' maxlength='6' required>"
                 + "<button class='btn green' type='submit'>Подтвердить и включить 2FA ✔</button></form>";
+
+        String dashHtml = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+                + "<title>MIR-TIME | Кабинет " + escapeHtml(realName) + "</title>" + baseCss
+                + "<style>.card{background:rgba(15,25,48,0.75);border:1px solid rgba(0,119,255,0.35);border-radius:16px;padding:18px;margin-top:14px;}"
+                + ".card h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.5px;color:#00e5ff;}"
+                + ".badge{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(0,229,255,0.12);color:#00e5ff;margin-top:4px;}</style></head><body>"
+                + "<div class='panel' style='max-width:620px;'>"
+                + "<div style='display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px;gap:12px;'>"
+                + "<div style='display:flex;align-items:center;gap:16px;'>"
+                + "<img src='" + mcHost + "/body/" + escapeHtml(realName) + "/90' style='height:90px;filter:drop-shadow(0 0 12px rgba(0,229,255,0.4));'>"
+                + "<div><h2 style='margin:0;font-size:22px;color:#fff;'>⚡ " + escapeHtml(realName) + "</h2>"
+                + "<div class='badge'>IP: " + escapeHtml(lastIp) + "</div> "
+                + "<div class='badge' style='color:#00ff66;background:rgba(0,255,102,0.12);'>Почта: " + escapeHtml(email) + "</div></div></div>"
+                + "<a href='/' style='padding:8px 14px;border-radius:10px;background:rgba(255,71,87,0.15);border:1px solid #ff4757;color:#ff6b81;text-decoration:none;font-size:12px;font-weight:700;'>Выйти</a></div>"
+                + "<div style='margin-top:14px;'>" + notice + "</div>"
+                + "<div class='card'><h3>📱 Двухфакторная защита (Google Authenticator)</h3>" + twoFaCard + "</div>"
+                + "<div class='card'><h3>🔑 Смена игрового пароля</h3>"
+                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='change_pass'>"
+                + "<input type='password' name='new_password' placeholder='Придумайте новый пароль' required>"
+                + "<button class='btn' type='submit'>Сохранить новый пароль</button></form></div>"
+                + "<div class='card'><h3>📧 Резервная почта</h3>"
+                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='save_email'>"
+                + "<input type='email' name='email' placeholder='Введите ваш Email' required>"
+                + "<button class='btn' type='submit'>Привязать почту</button></form></div>"
+                + "<div class='card'><h3>🛡 Экстренное управление</h3>"
+                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='kick_self'>"
+                + "<button class='btn red' type='submit'>Кикнуть мой аккаунт с сервера</button></form></div>"
+                + "</div></body></html>";
+        sendHtml(ex, dashHtml);
+    }
 
     private void sendSmtpMail(String to, String subject, String body) {
         try {

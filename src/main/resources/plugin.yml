@@ -1,0 +1,21 @@
+name: MirTimeAuth
+version: '1.0.0'
+main: ru.mirtime.auth.MirTimeAuth
+api-version: '1.21'
+commands:
+  register:
+    description: Регистрация аккаунта
+    aliases: [reg]
+  login:
+    description: Вход в аккаунт
+    aliases: [l]
+  changepassword:
+    description: Смена пароля
+    aliases: [cp, changepass]
+  2fa:
+    description: Управление Google Authenticator
+  logout:
+    description: Выйти из активной сессии
+  authspawn:
+    description: Задать точку спавна после авторизации
+    permission: mirtime.auth.admin

@@ -954,7 +954,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         if (raw == null || raw.isEmpty()) return map;
         for (String pair : raw.split("&")) {
             String[] kv = pair.split("=", 2);
-            if (kv.length == 2) map.put(URLDecoder.decode(kv, StandardCharsets.UTF_8), URLDecoder.decode(kv, StandardCharsets.UTF_8));
+            if (kv.length == 2) map.put(URLDecoder.decode(kv[0], StandardCharsets.UTF_8), URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
         }
         return map;
     }

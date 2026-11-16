@@ -1,5 +1,5 @@
 name: MirTimeAuth
-version: '1.0.0'
+version: '1.1.0'
 main: ru.mirtime.auth.MirTimeAuth
 api-version: '1.21'
 commands:
@@ -13,7 +13,9 @@ commands:
     description: Смена пароля
     aliases: [cp, changepass]
   2fa:
-    description: Управление Google Authenticator
+    description: Меню защиты (Google Authenticator / Сайт / Почта)
+  recovery:
+    description: Восстановление пароля через почту
   logout:
     description: Выйти из активной сессии
   authspawn:

@@ -834,6 +834,16 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             int port = getConfig().getInt("email.smtp-port", 465);
             String user = getConfig().getString("email.username", "");
             String pass = getConfig().getString("email.password", "");
+            String codeOnly = body.replaceAll("\\D+", "");
+            String html = "<div style='background:#070b14;padding:30px;font-family:sans-serif;color:#e6f1ff;text-align:center;'>"
+                    + "<div style='max-width:420px;margin:auto;background:#0d1526;border:1px solid #0055ff;border-radius:14px;padding:24px;'>"
+                    + "<h2 style='color:#00e5ff;margin:0 0 10px 0;'>⚡ MIR-TIME</h2>"
+                    + "<p style='color:#9ab2d4;font-size:14px;'>" + escapeHtml(body) + "</p>"
+                    + "<div style='background:#111c33;border:1px solid #00ff66;border-radius:10px;padding:14px;margin:16px 0;font-size:28px;font-weight:bold;letter-spacing:6px;color:#00ff66;'>"
+                    + codeOnly + "</div>"
+                    + "<p style='color:#5c7699;font-size:12px;margin:0;'>Если вы не запрашивали код, просто проигнорируйте это письмо.</p>"
+                    + "</div></div>";
+
             try (SSLSocket sock = (SSLSocket) SSLSocketFactory.getDefault().createSocket(host, port);
                  BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                  PrintWriter out = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()), true)) {
@@ -845,7 +855,9 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 out.println("MAIL FROM:<" + user + ">"); in.readLine();
                 out.println("RCPT TO:<" + to + ">"); in.readLine();
                 out.println("DATA"); in.readLine();
-                out.println("From: MIR-TIME <" + user + ">\r\nTo: <" + to + ">\r\nSubject: " + subject + "\r\n\r\n" + body + "\r\n.");
+                out.println("From: MIR-TIME <" + user + ">\r\nTo: <" + to + ">\r\nSubject: =?UTF-8?B?"
+                        + Base64.getEncoder().encodeToString(subject.getBytes(StandardCharsets.UTF_8))
+                        + "?=\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n" + html + "\r\n.");
                 in.readLine();
                 out.println("QUIT");
             }

@@ -35,7 +35,6 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.SSLSocket;
@@ -57,6 +56,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener {
 
     private File usersFile;
@@ -74,7 +74,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
     private final Map<String, String> emailVerifyCodes = new ConcurrentHashMap<>();
     private final Map<String, String> emailPendingAddr = new ConcurrentHashMap<>();
     private final Map<String, String> recoveryCodes = new ConcurrentHashMap<>();
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -252,7 +251,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             p.sendMessage(prefix + color("&fДобро пожаловать на &bMIR-TIME&f! Зарегистрируйтесь: &#00FF66/reg <пароль> <повтор>"));
         }
     }
-
     private void giveCaptchaMap(Player p, String prefix) {
         String code = String.valueOf(1000 + new SecureRandom().nextInt(9000));
         pendingCaptcha.put(p.getUniqueId(), code);
@@ -261,6 +259,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         p.getInventory().setHeldItemSlot(slot);
         savedSlot.put(p.getUniqueId(), slot);
         savedMainHand.put(p.getUniqueId(), p.getInventory().getItem(slot));
+
         MapView view = Bukkit.createMap(p.getWorld());
         view.setTrackingPosition(false);
         view.setUnlimitedTracking(false);
@@ -423,7 +422,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         inv.setItem(22, item(Material.BARRIER, "&c&l[✖ Закрыть меню]", null));
         p.openInventory(inv);
     }
-
     @EventHandler
     public void onInvClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
@@ -448,6 +446,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             p.sendMessage(prefix + color("&7Либо укажите её прямо в Личном кабинете на сайте."));
         }
     }
+
     private void sendGoogleSetup(Player p) {
         String key = p.getName().toLowerCase();
         String prefix = color(getConfig().getString("prefix", "&#0055ff&l⚡ &#00E5FF&lMIR-TIME &8» "));
@@ -458,7 +457,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
 
         String otpUri = "otpauth://totp/MIR-TIME:" + URLEncoder.encode(p.getName(), StandardCharsets.UTF_8)
                 + "?secret=" + secret + "&issuer=MIR-TIME";
-        String qrUrl = "https://qrserver.com"
+        String qrUrl = "https://" + "://qrserver.com"
                 + URLEncoder.encode(otpUri, StandardCharsets.UTF_8);
 
         p.sendMessage(color("&#0055ff&l&m                                                "));
@@ -494,7 +493,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         p.sendMessage(color(" &7Адрес сайта: &b" + url));
         p.sendMessage(color("&#0055ff&l&m                                                "));
     }
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) return true;
@@ -506,6 +504,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             p.sendMessage(prefix + color("&cСначала напишите &e4 цифры &cс карты в руке прямо в чат!"));
             return true;
         }
+
         if (cName.equals("recovery")) {
             if (!getConfig().getBoolean("email.enabled", false)) {
                 p.sendMessage(prefix + color("&cВосстановление по почте временно отключено администрацией."));
@@ -539,7 +538,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             }
             return true;
         }
-
         if (cName.equals("register")) {
             if (loggedIn.contains(p.getUniqueId())) { p.sendMessage(prefix + color("&cВы уже авторизованы!")); return true; }
             if (db.contains("users." + key + ".hash")) { p.sendMessage(prefix + color("&cАккаунт уже зарегистрирован! Введите &#00FF66/login <пароль>")); return true; }
@@ -672,7 +670,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             p.sendMessage(prefix + color("&#00FF66Точка спавна после авторизации установлена!"));
             return true;
         }
-
         if (cName.equals("changepassword")) {
             if (args.length < 2) { p.sendMessage(prefix + color("&fИспользование: &#00FF66/cp <старый_пароль> <новый_пароль>")); return true; }
             String oldPass = List.of(args).get(0);
@@ -701,6 +698,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         }
         return true;
     }
+
     private void completeLogin(Player p, String key, String prefix, boolean autoSession) {
         loggedIn.add(p.getUniqueId());
         removeAuthBar(p);
@@ -724,7 +722,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 ? "&#00FF66Автоматический вход по сессии! &7Меню защиты и мини-сайт: &#00E5FF/2fa"
                 : "&#00FF66Успешный вход! &7Меню защиты и мини-сайт: &#00E5FF/2fa"));
     }
-
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMove(PlayerMoveEvent e) {
         if (!loggedIn.contains(e.getPlayer().getUniqueId()) && e.hasChangedPosition()) e.setTo(e.getFrom());
@@ -744,6 +741,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
     @EventHandler public void onInvOpen(InventoryOpenEvent e) { if (e.getPlayer() instanceof Player p && !loggedIn.contains(p.getUniqueId())) e.setCancelled(true); }
     @EventHandler public void onDamage(EntityDamageEvent e) { if (e.getEntity() instanceof Player p && !loggedIn.contains(p.getUniqueId())) e.setCancelled(true); }
     @EventHandler public void onAttack(EntityDamageByEntityEvent e) { if (e.getDamager() instanceof Player p && !loggedIn.contains(p.getUniqueId())) e.setCancelled(true); }
+
     private void startWebServer() {
         if (!getConfig().getBoolean("web.enabled", true)) return;
         int port = getConfig().getInt("web.port", 8085);
@@ -770,7 +768,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             String pass = form.getOrDefault("password", "");
 
             if (!db.contains("users." + user + ".hash")) {
-                notice = "<div class='alert err'>✖ Игрок с таким ником не зарегистрирован!</div>";
+                notice = "<div class='alert err'>✖ Игрок не зарегистрирован на сервере!</div>";
             } else {
                 String salt = db.getString("users." + user + ".salt", "");
                 if (!db.getString("users." + user + ".hash", "").equals(hashPassword(pass, salt))) {
@@ -825,11 +823,10 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 }
             }
         }
-
-        // ЗАМЕНИ ЭТИ 3 СТРОКИ НА ДЕКОДИРОВАННЫЕ ИЗ BASE64:
         String mcHost = "https://mc-heads.net";
         String qrHost = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=";
         String fontUrl = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap";
+
         String baseCss = "<style>@import url('" + fontUrl + "');"
                 + "*{box-sizing:border-box}body{margin:0;font-family:'Montserrat',sans-serif;background:#050811;color:#eef6ff;min-height:100vh;"
                 + "display:flex;justify-content:center;align-items:center;padding:20px;"
@@ -865,8 +862,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                     + "<input type='text' name='username' placeholder='Введите ваш игровой ник' oninput=\"document.getElementById('av').src='" + mcHost + "/avatar/'+(this.value||'Steve')+'/72'\" required>"
                     + "<input type='password' name='password' placeholder='Введите ваш игровой пароль' required>"
                     + "<button class='btn green' type='submit'>Войти в систему ➔</button></form>"
-                    + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);font-size:11px;color:#637fa3;'>"
-                    + "IP сервера: <b style='color:#00e5ff'>play.mir-time.ru</b> &bull; Paper 1.21+</div>"
                     + "</div></body></html>";
             sendHtml(ex, loginHtml);
             return;
@@ -884,21 +879,15 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
 
         String hiddenAuth = "<input type='hidden' name='username' value='" + escapeHtml(loggedUser) + "'>"
                 + "<input type='hidden' name='password' value='" + escapeHtml(savedPass) + "'>";
-
         String otpUri = "otpauth://totp/MIR-TIME:" + URLEncoder.encode(realName, StandardCharsets.UTF_8) + "?secret=" + secret + "&issuer=MIR-TIME";
         String qrUrl = qrHost + URLEncoder.encode(otpUri, StandardCharsets.UTF_8);
 
         String twoFaCard = totpEnabled
-                ? "<div style='background:rgba(0,255,102,0.1);border:1px solid rgba(0,255,102,0.3);padding:10px 14px;border-radius:10px;margin-bottom:10px;color:#00ff66;font-size:13px;font-weight:700;'>"
-                + "✔ Двухфакторная защита (2FA) активна</div>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='disable_2fa'>"
-                + "<button class='btn red' type='submit'>Отключить Google Authenticator</button></form>"
-                : "<p style='font-size:12px;color:#9ab2d4;margin:0 0 10px;'>Отсканируйте QR-код телефоном или введите ключ: "
-                + "<code style='background:#050811;padding:4px 8px;border-radius:6px;color:#00ff66;font-weight:bold;'>" + secret + "</code></p>"
+                ? "<div style='background:rgba(0,255,102,0.1);border:1px solid rgba(0,255,102,0.3);padding:10px 14px;border-radius:10px;margin-bottom:10px;color:#00ff66;font-size:13px;font-weight:700;'>✔ Двухфакторная защита (2FA) активна</div>"
+                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='disable_2fa'><button class='btn red' type='submit'>Отключить Google Authenticator</button></form>"
+                : "<p style='font-size:12px;color:#9ab2d4;margin:0 0 10px;'>Отсканируйте QR-код телефоном или введите ключ: <code style='background:#050811;padding:4px 8px;border-radius:6px;color:#00ff66;font-weight:bold;'>" + secret + "</code></p>"
                 + "<img src='" + qrUrl + "' style='display:block;margin:12px auto;border-radius:14px;border:5px solid #fff;box-shadow:0 0 20px rgba(0,229,255,0.25);'>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='enable_2fa'>"
-                + "<input type='text' name='code' placeholder='Введите 6 цифр из приложения' maxlength='6' required>"
-                + "<button class='btn green' type='submit'>Подтвердить и включить 2FA ✔</button></form>";
+                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='enable_2fa'><input type='text' name='code' placeholder='Введите 6 цифр из приложения' maxlength='6' required><button class='btn green' type='submit'>Подтвердить и включить 2FA ✔</button></form>";
 
         String dashHtml = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
                 + "<title>MIR-TIME | Кабинет " + escapeHtml(realName) + "</title>" + baseCss
@@ -910,26 +899,16 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                 + "<div style='display:flex;align-items:center;gap:16px;'>"
                 + "<img src='" + mcHost + "/body/" + escapeHtml(realName) + "/90' style='height:90px;filter:drop-shadow(0 0 12px rgba(0,229,255,0.4));'>"
                 + "<div><h2 style='margin:0;font-size:22px;color:#fff;'>⚡ " + escapeHtml(realName) + "</h2>"
-                + "<div class='badge'>IP: " + escapeHtml(lastIp) + "</div> "
-                + "<div class='badge' style='color:#00ff66;background:rgba(0,255,102,0.12);'>Почта: " + escapeHtml(email) + "</div></div></div>"
+                + "<div class='badge'>IP: " + escapeHtml(lastIp) + "</div> <div class='badge' style='color:#00ff66;background:rgba(0,255,102,0.12);'>Почта: " + escapeHtml(email) + "</div></div></div>"
                 + "<a href='/' style='padding:8px 14px;border-radius:10px;background:rgba(255,71,87,0.15);border:1px solid #ff4757;color:#ff6b81;text-decoration:none;font-size:12px;font-weight:700;'>Выйти</a></div>"
                 + "<div style='margin-top:14px;'>" + notice + "</div>"
                 + "<div class='card'><h3>📱 Двухфакторная защита (Google Authenticator)</h3>" + twoFaCard + "</div>"
-                + "<div class='card'><h3>🔑 Смена игрового пароля</h3>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='change_pass'>"
-                + "<input type='password' name='new_password' placeholder='Придумайте новый пароль' required>"
-                + "<button class='btn' type='submit'>Сохранить новый пароль</button></form></div>"
-                + "<div class='card'><h3>📧 Резервная почта</h3>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='save_email'>"
-                + "<input type='email' name='email' placeholder='Введите ваш Email' required>"
-                + "<button class='btn' type='submit'>Привязать почту</button></form></div>"
-                + "<div class='card'><h3>🛡 Экстренное управление</h3>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='kick_self'>"
-                + "<button class='btn red' type='submit'>Кикнуть мой аккаунт с сервера</button></form></div>"
+                + "<div class='card'><h3>🔑 Смена игрового пароля</h3><form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='change_pass'><input type='password' name='new_password' placeholder='Придумайте новый пароль' required><button class='btn' type='submit'>Сохранить новый пароль</button></form></div>"
+                + "<div class='card'><h3>📧 Резервная почта</h3><form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='save_email'><input type='email' name='email' placeholder='Введите ваш Email' required><button class='btn' type='submit'>Привязать почту</button></form></div>"
+                + "<div class='card'><h3>🛡 Экстренное управление</h3><form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='kick_self'><button class='btn red' type='submit'>Кикнуть мой аккаунт с сервера</button></form></div>"
                 + "</div></body></html>";
         sendHtml(ex, dashHtml);
     }
-
     private void sendSmtpMail(String to, String subject, String body) {
         try {
             String host = getConfig().getString("email.smtp-host", "smtp.yandex.ru");
@@ -939,12 +918,9 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             String codeOnly = body.replaceAll("\\D+", "");
             String html = "<div style='background:#070b14;padding:30px;font-family:sans-serif;color:#e6f1ff;text-align:center;'>"
                     + "<div style='max-width:420px;margin:auto;background:#0d1526;border:1px solid #0055ff;border-radius:14px;padding:24px;'>"
-                    + "<h2 style='color:#00e5ff;margin:0 0 10px 0;'>⚡ MIR-TIME</h2>"
-                    + "<p style='color:#9ab2d4;font-size:14px;'>" + escapeHtml(body) + "</p>"
-                    + "<div style='background:#111c33;border:1px solid #00ff66;border-radius:10px;padding:14px;margin:16px 0;font-size:28px;font-weight:bold;letter-spacing:6px;color:#00ff66;'>"
-                    + codeOnly + "</div>"
-                    + "<p style='color:#5c7699;font-size:12px;margin:0;'>Если вы не запрашивали код, просто проигнорируйте это письмо.</p>"
-                    + "</div></div>";
+                    + "<h2 style='color:#00e5ff;margin:0 0 10px 0;'>⚡ MIR-TIME</h2><p style='color:#9ab2d4;font-size:14px;'>" + escapeHtml(body) + "</p>"
+                    + "<div style='background:#111c33;border:1px solid #00ff66;border-radius:10px;padding:14px;margin:16px 0;font-size:28px;font-weight:bold;letter-spacing:6px;color:#00ff66;'>" + codeOnly + "</div>"
+                    + "<p style='color:#5c7699;font-size:12px;margin:0;'>Если вы не запрашивали код, просто проигнорируйте это письмо.</p></div></div>";
 
             try (SSLSocket sock = (SSLSocket) SSLSocketFactory.getDefault().createSocket(host, port);
                  BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
@@ -965,35 +941,6 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             }
         } catch (Exception ignored) {}
     }
-        String dashHtml = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
-                + "<title>MIR-TIME | Кабинет " + escapeHtml(realName) + "</title>" + baseCss
-                + "<style>.card{background:rgba(15,25,48,0.75);border:1px solid rgba(0,119,255,0.35);border-radius:16px;padding:18px;margin-top:14px;}"
-                + ".card h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.5px;color:#00e5ff;}"
-                + ".badge{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(0,229,255,0.12);color:#00e5ff;margin-top:4px;}</style></head><body>"
-                + "<div class='panel' style='max-width:620px;'>"
-                + "<div style='display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px;gap:12px;'>"
-                + "<div style='display:flex;align-items:center;gap:16px;'>"
-                + "<img src='https://mc-heads.net" + escapeHtml(realName) + "/90' style='height:90px;filter:drop-shadow(0 0 12px rgba(0,229,255,0.4));'>"
-                + "<div><h2 style='margin:0;font-size:22px;color:#fff;'>⚡ " + escapeHtml(realName) + "</h2>"
-                + "<div class='badge'>IP: " + escapeHtml(lastIp) + "</div> "
-                + "<div class='badge' style='color:#00ff66;background:rgba(0,255,102,0.12);'>Почта: " + escapeHtml(email) + "</div></div></div>"
-                + "<a href='/' style='padding:8px 14px;border-radius:10px;background:rgba(255,71,87,0.15);border:1px solid #ff4757;color:#ff6b81;text-decoration:none;font-size:12px;font-weight:700;'>Выйти</a></div>"
-                + "<div style='margin-top:14px;'>" + notice + "</div>"
-                + "<div class='card'><h3>📱 Двухфакторная защита (Google Authenticator)</h3>" + twoFaCard + "</div>"
-                + "<div class='card'><h3>🔑 Смена игрового пароля</h3>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='change_pass'>"
-                + "<input type='password' name='new_password' placeholder='Придумайте новый пароль' required>"
-                + "<button class='btn' type='submit'>Сохранить новый пароль</button></form></div>"
-                + "<div class='card'><h3>📧 Резервная почта</h3>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='save_email'>"
-                + "<input type='email' name='email' placeholder='Введите ваш Email' required>"
-                + "<button class='btn' type='submit'>Привязать почту</button></form></div>"
-                + "<div class='card'><h3>🛡 Экстренное управление</h3>"
-                + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='kick_self'>"
-                + "<button class='btn red' type='submit'>Кикнуть мой аккаунт с сервера</button></form></div>"
-                + "</div></body></html>";
-        sendHtml(ex, dashHtml);
-    }
 
     private void sendHtml(HttpExchange ex, String html) throws IOException {
         byte[] bytes = html.getBytes(StandardCharsets.UTF_8);
@@ -1007,11 +954,10 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         if (raw == null || raw.isEmpty()) return map;
         for (String pair : raw.split("&")) {
             String[] kv = pair.split("=", 2);
-            if (kv.length == 2) map.put(URLDecoder.decode(kv[0], StandardCharsets.UTF_8), URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
+            if (kv.length == 2) map.put(URLDecoder.decode(kv, StandardCharsets.UTF_8), URLDecoder.decode(kv, StandardCharsets.UTF_8));
         }
         return map;
     }
-
     private String escapeHtml(String s) { return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;"); }
     private String getPublicIp() { try { return InetAddress.getLocalHost().getHostAddress(); } catch (Exception e) { return "127.0.0.1"; } }
 

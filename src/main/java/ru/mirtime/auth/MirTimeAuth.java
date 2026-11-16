@@ -5,10 +5,14 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -57,6 +61,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
     private final Map<UUID, ItemStack> savedMainHand = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> savedSlot = new ConcurrentHashMap<>();
     private final Map<UUID, Long> joinTime = new ConcurrentHashMap<>();
+    private final Map<UUID, BossBar> authBars = new ConcurrentHashMap<>();
 
     @Override
     public void onEnable() {
@@ -78,15 +83,27 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             @Override
             public void run() {
                 long now = System.currentTimeMillis();
-                long maxMs = getConfig().getLong("security.login-timeout-seconds", 90) * 1000L;
+                long maxSec = getConfig().getLong("security.login-timeout-seconds", 90);
+                long maxMs = maxSec * 1000L;
+
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    if (loggedIn.contains(p.getUniqueId())) continue;
+                    if (loggedIn.contains(p.getUniqueId())) {
+                        removeAuthBar(p);
+                        continue;
+                    }
                     long joined = joinTime.getOrDefault(p.getUniqueId(), now);
-                    if (now - joined > maxMs) {
+                    long elapsed = now - joined;
+                    if (elapsed > maxMs) {
+                        removeAuthBar(p);
                         restoreHandItem(p);
                         p.kickPlayer(color("&#0055ff&l⚡ &#00E5FF&lMIR-TIME &8» &cВремя на авторизацию вышло!"));
                         continue;
                     }
+
+                    long leftSec = Math.max(1, (maxMs - elapsed) / 1000L);
+                    double progress = Math.max(0.0, Math.min(1.0, (double) (maxMs - elapsed) / maxMs));
+                    updateAuthBar(p, leftSec, progress);
+
                     String key = p.getName().toLowerCase();
                     if (pendingCaptcha.containsKey(p.getUniqueId())) {
                         p.sendTitle(color("&#00E5FF&lПРОВЕРКА КАПЧИ"), color("&fНапишите &e4 цифры &fс карты прямо в чат"), 0, 25, 0);
@@ -99,16 +116,44 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
                     }
                 }
             }
-        }.runTaskTimer(this, 20L, 20L);
+        }.runTaskTimer(this, 10L, 20L);
 
-        Bukkit.getConsoleSender().sendMessage(color("&#00E5FF  MirTimeAuth v1.0.0 (VoidWorld + MapCaptcha + 2FA) успешно запущен!"));
+        Bukkit.getConsoleSender().sendMessage(color("&#00E5FF  MirTimeAuth v1.0.0 (BossBar + VoidWorld + MapCaptcha) запущен!"));
     }
+
+    @Override
+    public void onDisable() {
+        for (BossBar bar : authBars.values()) {
+            bar.removeAll();
+        }
+        authBars.clear();
+    }
+    private void updateAuthBar(Player p, long leftSec, double progress) {
+        BossBar bar = authBars.computeIfAbsent(p.getUniqueId(), id -> {
+            BossBar b = Bukkit.createBossBar("", BarColor.BLUE, BarStyle.SOLID);
+            b.addPlayer(p);
+            return b;
+        });
+        String stage = pendingCaptcha.containsKey(p.getUniqueId()) ? "Пройдите капчу с карты"
+                : (awaiting2FA.contains(p.getUniqueId()) ? "Введите код 2FA" : "Авторизуйтесь на сервере");
+        bar.setTitle(color("&#0055ff&l⚡ &#00E5FF&l" + stage + " &8| &fОсталось: &#00FF66" + leftSec + " сек."));
+        bar.setProgress(progress);
+        bar.setColor(leftSec <= 15 ? BarColor.RED : BarColor.BLUE);
+    }
+
+    private void removeAuthBar(Player p) {
+        BossBar bar = authBars.remove(p.getUniqueId());
+        if (bar != null) {
+            bar.removeAll();
+        }
+    }
+
     private void setupAuthWorld() {
         String wName = getConfig().getString("security.auth-world", "auth_void");
         authWorld = Bukkit.getWorld(wName);
         if (authWorld == null) {
             WorldCreator wc = new WorldCreator(wName);
-            wc.environment(World.Environment.THE_END);
+            wc.environment(World.Environment.NORMAL);
             wc.type(WorldType.FLAT);
             wc.generateStructures(false);
             wc.generator(new ChunkGenerator() {});
@@ -120,6 +165,9 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             authWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             authWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
             authWorld.setTime(18000L);
+            for (Entity ent : authWorld.getEntities()) {
+                if (!(ent instanceof Player)) ent.remove();
+            }
         }
     }
 
@@ -178,8 +226,13 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         }
 
         sendToVoid(p);
-        if (getConfig().getBoolean("security.captcha-enabled", true)) {
-            giveCaptchaMap(p, prefix);
+        boolean needCaptcha = getConfig().getBoolean("security.captcha-enabled", true) && !p.isOp();
+        if (needCaptcha) {
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                if (p.isOnline() && !loggedIn.contains(p.getUniqueId())) {
+                    giveCaptchaMap(p, prefix);
+                }
+            }, 5L);
         } else {
             promptAuth(p, key, prefix);
         }
@@ -196,11 +249,14 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         String code = String.valueOf(1000 + new SecureRandom().nextInt(9000));
         pendingCaptcha.put(p.getUniqueId(), code);
 
-        int slot = p.getInventory().getHeldItemSlot();
+        int slot = 4;
+        p.getInventory().setHeldItemSlot(slot);
         savedSlot.put(p.getUniqueId(), slot);
         savedMainHand.put(p.getUniqueId(), p.getInventory().getItem(slot));
 
         MapView view = Bukkit.createMap(p.getWorld());
+        view.setTrackingPosition(false);
+        view.setUnlimitedTracking(false);
         view.getRenderers().clear();
         view.addRenderer(new MapRenderer(false) {
             boolean rendered = false;
@@ -246,6 +302,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
             mapItem.setItemMeta(meta);
         }
         p.getInventory().setItem(slot, mapItem);
+        p.updateInventory();
         p.sendMessage(prefix + color("&#00E5FFПроверка на бота! &fПосмотрите на карту в руке и напишите &e4 цифры &fпросто в чат."));
     }
 
@@ -254,6 +311,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
         ItemStack prev = savedMainHand.remove(p.getUniqueId());
         if (slot != null) {
             p.getInventory().setItem(slot, prev);
+            p.updateInventory();
         }
     }
 
@@ -261,6 +319,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         UUID id = p.getUniqueId();
+        removeAuthBar(p);
         restoreHandItem(p);
         p.setGravity(true);
         if (p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR) {
@@ -507,6 +566,7 @@ public class MirTimeAuth extends JavaPlugin implements CommandExecutor, Listener
 
     private void completeLogin(Player p, String key, String prefix, boolean autoSession) {
         loggedIn.add(p.getUniqueId());
+        removeAuthBar(p);
         long hours = getConfig().getLong("security.session-hours", 12);
         db.set("users." + key + ".last-ip", getIp(p));
         db.set("users." + key + ".session-until", System.currentTimeMillis() + hours * 3600_000L);

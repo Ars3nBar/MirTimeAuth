@@ -1,15 +1,11 @@
 prefix: "&#0055ff&l⚡ &#00E5FF&lMIR-TIME &8» "
 
 security:
-  # Название пустого мира для зависания в воздухе до входа:
   auth-world: "auth_void"
-  # Включить графическую капчу на карте:
   captcha-enabled: true
-  min-password-length: 6
+  min-password-length: 4
   max-password-length: 32
-  # Время запоминания IP-сессии в часах (0 - спрашивать пароль каждый вход):
   session-hours: 12
-  # Время на прохождение капчи и входа в секундах до кика:
   login-timeout-seconds: 90
   allowed-commands:
     - "/login"
@@ -17,3 +13,16 @@ security:
     - "/register"
     - "/reg"
     - "/2fa"
+    - "/recovery"
+
+web:
+  enabled: true
+  port: 8085
+  public-host: "auto"
+
+email:
+  enabled: false
+  smtp-host: "smtp.yandex.ru"
+  smtp-port: 465
+  username: "mirtime-server@yandex.ru"
+  password: "пароль_приложения"

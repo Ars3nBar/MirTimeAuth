@@ -11,7 +11,9 @@ import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WebCabinet {
@@ -39,6 +41,7 @@ public class WebCabinet {
     public void stop() {
         if (server != null) server.stop(0);
     }
+
     private void handle(HttpExchange ex) throws IOException {
         String notice = "";
         String loggedUser = null;
@@ -111,17 +114,18 @@ public class WebCabinet {
                 }
             }
         }
+        // ЗАМЕНИ ЭТИ 3 СТРОКИ НА ДЕКОДИРОВАННЫЕ ИЗ BASE64 НИЖЕ:
         String mcHost = "https://mc-heads.net";
         String qrHost = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=";
         String fontUrl = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap";
 
         String css = "<style>@import url('" + fontUrl + "');"
                 + "*{box-sizing:border-box}body{margin:0;font-family:'Montserrat',sans-serif;background:#04070f;color:#eef6ff;min-height:100vh;"
-                + "display:flex;justify-content:center;align-items:center;padding:20px;"
-                + "background-image:radial-gradient(circle at 50% -10%,rgba(0,119,255,0.35),transparent 55%),"
+                + "display:flex;justify-content:center;align-items:center;padding:24px 16px;"
+                + "background-image:radial-gradient(circle at 50% -10%,rgba(0,119,255,0.38),transparent 58%),"
                 + "linear-gradient(rgba(0,229,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.035) 1px,transparent 1px);"
                 + "background-size:100% 100%,34px 34px,34px 34px;}"
-                + ".panel{background:rgba(10,17,32,0.88);backdrop-filter:blur(18px);border:1px solid rgba(0,229,255,0.35);"
+                + ".panel{background:rgba(10,17,32,0.9);backdrop-filter:blur(18px);border:1px solid rgba(0,229,255,0.35);"
                 + "border-radius:24px;box-shadow:0 0 60px rgba(0,85,255,0.28),inset 0 0 24px rgba(0,229,255,0.05);padding:28px;width:100%;}"
                 + ".brand{font-size:28px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#0066ff,#00e5ff,#00ff66);"
                 + "-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;}"
@@ -140,25 +144,38 @@ public class WebCabinet {
                 + ".card{background:rgba(14,24,46,0.78);border:1px solid rgba(0,119,255,0.32);border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;}"
                 + ".card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:#00e5ff;}"
                 + ".badge{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(0,229,255,0.12);color:#00e5ff;margin:4px 4px 0 0;}</style>";
+
+        int online = Bukkit.getOnlinePlayers().size();
+        int maxPlayers = Bukkit.getMaxPlayers();
+        String footerHtml = "<div style='margin-top:22px;padding-top:16px;border-top:1px solid rgba(0,229,255,0.15);text-align:center;font-size:11px;color:#637fa3;line-height:1.6;'>"
+                + "<div style='color:#00e5ff;font-weight:700;margin-bottom:4px;'>⚡ MIR-TIME — Уникальный сервер Анархии 1.21+</div>"
+                + "<div>Кастомные ивенты &bull; Уникальные зачарования &bull; Честное PvP без лагов &bull; Защита 2FA</div>"
+                + "<div style='margin-top:8px;color:#465d7d;'>&copy; 2026 MIR-TIME Network. Все права защищены. Not affiliated with Mojang AB.</div></div>";
+
         if (loggedUser == null) {
             String loginHtml = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
-                    + "<title>MIR-TIME | Личный кабинет</title>" + css + "</head><body>"
-                    + "<div class='panel' style='max-width:410px;text-align:center;'>"
-                    + "<div style='display:inline-block;padding:4px;border-radius:20px;background:linear-gradient(135deg,#0055ff,#00ff66);margin-bottom:12px;'>"
+                    + "<title>MIR-TIME | Официальный портал и кабинет</title>" + css + "</head><body>"
+                    + "<div class='panel' style='max-width:460px;text-align:center;'>"
+                    + "<div style='display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;background:rgba(0,255,102,0.1);border:1px solid rgba(0,255,102,0.3);color:#00ff66;font-size:11px;font-weight:700;margin-bottom:14px;'>"
+                    + "<span style='width:8px;height:8px;border-radius:50%;background:#00ff66;display:inline-block;'></span> Онлайн сервера: " + online + " / " + maxPlayers + "</div><br>"
+                    + "<div style='display:inline-block;padding:4px;border-radius:20px;background:linear-gradient(135deg,#0055ff,#00ff66);margin-bottom:10px;'>"
                     + "<img id='av' src='" + mcHost + "/avatar/Steve/76' width='76' height='76' style='display:block;border-radius:16px;background:#080e1c;'></div>"
                     + "<h1 class='brand'>⚡ MIR-TIME</h1>"
-                    + "<p style='color:#8aa4c8;font-size:12px;margin:6px 0 20px;'>Центр безопасности игрового аккаунта</p>"
+                    + "<p style='color:#8aa4c8;font-size:12px;margin:6px 0 18px;'>Официальный личный кабинет и центр безопасности</p>"
                     + notice
                     + "<form method='post'><input type='hidden' name='action' value='login'>"
                     + "<input type='text' name='username' placeholder='Ваш игровой ник' oninput=\"document.getElementById('av').src='" + mcHost + "/avatar/'+(this.value||'Steve')+'/76'\" required>"
                     + "<input type='password' name='password' placeholder='Ваш игровой пароль' required>"
                     + "<button class='btn green' type='submit'>Войти в кабинет ➔</button></form>"
-                    + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);font-size:11px;color:#637fa3;'>"
-                    + "Анархия 1.21+ &bull; Защита 2FA + Email</div></div></body></html>";
+                    + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;text-align:left;'>"
+                    + "<div onclick=\"navigator.clipboard.writeText('play.mir-time.ru');this.lastChild.innerText='Скопировано ✔'\" style='cursor:pointer;background:rgba(14,24,46,0.75);border:1px solid rgba(0,119,255,0.28);border-radius:12px;padding:10px;'>"
+                    + "<div style='font-size:10px;color:#637fa3;'>IP ДЛЯ ВХОДА (КЛИК)</div><div style='font-size:12px;font-weight:700;color:#00e5ff;'>play.mir-time.ru</div></div>"
+                    + "<div style='background:rgba(14,24,46,0.75);border:1px solid rgba(0,119,255,0.28);border-radius:12px;padding:10px;'>"
+                    + "<div style='font-size:10px;color:#637fa3;'>ВЕРСИЯ ИГРЫ</div><div style='font-size:12px;font-weight:700;color:#00ff66;'>Java 1.21+</div></div></div>"
+                    + footerHtml + "</div></body></html>";
             sendHtml(ex, loginHtml);
             return;
         }
-
         String realName = plugin.getDb().getString("users." + loggedUser + ".name", loggedUser);
         String lastIp = plugin.getDb().getString("users." + loggedUser + ".last-ip", "Неизвестно");
         String email = plugin.getDb().getString("users." + loggedUser + ".email", "");
@@ -170,6 +187,7 @@ public class WebCabinet {
             plugin.getDb().set("users." + loggedUser + ".totp-secret", secret);
             plugin.saveDb();
         }
+
         int secScore = 40 + (totpEnabled ? 35 : 0) + (hasEmail ? 25 : 0);
         String secColor = secScore >= 90 ? "#00ff66" : (secScore >= 65 ? "#00e5ff" : "#ffa502");
 
@@ -192,6 +210,7 @@ public class WebCabinet {
                 + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='remove_email'><button class='btn red' type='submit'>Отвязать почту</button></form>"
                 : "<p style='font-size:12px;color:#8aa4c8;margin:0 0 8px;'>Почта нужна для сброса забытого пароля через <b>/recovery</b>.</p>"
                 + "<form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='save_email'><input type='email' name='email' placeholder='Введите ваш Email' required><button class='btn green' type='submit'>Привязать почту</button></form>";
+
         String dashHtml = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
                 + "<title>MIR-TIME | " + escape(realName) + "</title>" + css + "</head><body>"
                 + "<div class='panel' style='max-width:740px;'>"
@@ -200,8 +219,9 @@ public class WebCabinet {
                 + "<img src='" + mcHost + "/body/" + escape(realName) + "/96' style='height:96px;filter:drop-shadow(0 0 14px rgba(0,229,255,0.45));'>"
                 + "<div><h2 style='margin:0;font-size:22px;color:#fff;'>⚡ " + escape(realName) + "</h2>"
                 + "<div class='badge'>IP: " + escape(lastIp) + "</div>"
-                + "<div class='badge' style='color:" + secColor + ";'>Защита аккаунта: " + secScore + "%</div>"
-                + "<div style='width:180px;height:6px;background:#091122;border-radius:6px;margin-top:8px;overflow:hidden;'>"
+                + "<div class='badge' style='color:" + secColor + ";'>Защита: " + secScore + "%</div>"
+                + "<div class='badge' style='color:#00ff66;'>Онлайн: " + online + "/" + maxPlayers + "</div>"
+                + "<div style='width:200px;height:6px;background:#091122;border-radius:6px;margin-top:8px;overflow:hidden;'>"
                 + "<div style='width:" + secScore + "%;height:100%;background:" + secColor + ";'></div></div></div></div>"
                 + "<a href='/' style='padding:9px 16px;border-radius:12px;background:rgba(255,71,87,0.15);border:1px solid #ff4757;color:#ff6b81;text-decoration:none;font-size:12px;font-weight:700;'>Выйти</a></div>"
                 + "<div style='margin-top:14px;'>" + notice + "</div>"
@@ -210,7 +230,7 @@ public class WebCabinet {
                 + "<div class='card'><h3>📧 Резервная почта</h3>" + emailCard + "</div>"
                 + "<div class='card'><h3>🔑 Смена пароля</h3><form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='change_pass'><input type='password' name='new_password' placeholder='Новый пароль' required><button class='btn' type='submit'>Обновить пароль</button></form></div>"
                 + "<div class='card'><h3>🛡 Экстренная защита</h3><p style='font-size:12px;color:#8aa4c8;margin:0 0 8px;'>Если на аккаунт зашёл посторонний, мгновенно выкиньте его с сервера.</p><form method='post'>" + hiddenAuth + "<input type='hidden' name='action' value='kick_self'><button class='btn red' type='submit'>Кикнуть аккаунт с сервера</button></form></div>"
-                + "</div></div></body></html>";
+                + "</div>" + footerHtml + "</div></body></html>";
         sendHtml(ex, dashHtml);
     }
 
@@ -225,7 +245,7 @@ public class WebCabinet {
         Map<String, String> map = new HashMap<>();
         if (raw == null || raw.isEmpty()) return map;
         for (String pair : raw.split("&")) {
-            java.util.List<String> kv = java.util.Arrays.asList(pair.split("=", 2));
+            List<String> kv = Arrays.asList(pair.split("=", 2));
             if (kv.size() == 2) map.put(URLDecoder.decode(kv.get(0), StandardCharsets.UTF_8), URLDecoder.decode(kv.get(1), StandardCharsets.UTF_8));
         }
         return map;

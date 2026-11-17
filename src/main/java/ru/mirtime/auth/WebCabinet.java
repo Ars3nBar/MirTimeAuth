@@ -225,8 +225,8 @@ public class WebCabinet {
         Map<String, String> map = new HashMap<>();
         if (raw == null || raw.isEmpty()) return map;
         for (String pair : raw.split("&")) {
-            String[] kv = pair.split("=", 2);
-            if (kv.length == 2) map.put(URLDecoder.decode(kv, StandardCharsets.UTF_8), URLDecoder.decode(kv, StandardCharsets.UTF_8));
+            java.util.List<String> kv = java.util.Arrays.asList(pair.split("=", 2));
+            if (kv.size() == 2) map.put(URLDecoder.decode(kv.get(0), StandardCharsets.UTF_8), URLDecoder.decode(kv.get(1), StandardCharsets.UTF_8));
         }
         return map;
     }

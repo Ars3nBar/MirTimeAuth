@@ -36,7 +36,7 @@ public class MailService {
                     + "<div style='background:rgba(0,102,255,0.12);border-radius:10px;padding:10px;font-size:12px;color:#00e5ff;margin-bottom:18px;'>"
                     + "Команда для ввода в игре: <b>/2fa emailconfirm " + code + "</b></div>"
                     + "<p style='color:#546e91;font-size:11px;margin:0;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;'>"
-                    + "Если вы не запрашивали этот код, просто проигнорируйте письмо.</p>"
+                    + "&copy; 2026 MIR-TIME Network. Все права защищены.</p>"
                     + "</div></div>";
 
             try (SSLSocket sock = (SSLSocket) SSLSocketFactory.getDefault().createSocket(host, port);

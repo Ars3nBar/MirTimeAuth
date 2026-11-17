@@ -146,7 +146,7 @@ public class WebCabinet {
                 + ".badge{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(0,229,255,0.12);color:#00e5ff;margin:4px 4px 0 0;}</style>";
 
         int online = Bukkit.getOnlinePlayers().size();
-        int maxPlayers = Bukkit.getMaxPlayers();
+        int maxPlayers = 70;
         String footerHtml = "<div style='margin-top:22px;padding-top:16px;border-top:1px solid rgba(0,229,255,0.15);text-align:center;font-size:11px;color:#637fa3;line-height:1.6;'>"
                 + "<div style='color:#00e5ff;font-weight:700;margin-bottom:4px;'>⚡ MIR-TIME — Уникальный сервер Анархии 1.21+</div>"
                 + "<div>Кастомные ивенты &bull; Уникальные зачарования &bull; Честное PvP без лагов &bull; Защита 2FA</div>"
@@ -157,7 +157,7 @@ public class WebCabinet {
                     + "<title>MIR-TIME | Официальный портал и кабинет</title>" + css + "</head><body>"
                     + "<div class='panel' style='max-width:460px;text-align:center;'>"
                     + "<div style='display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;background:rgba(0,255,102,0.1);border:1px solid rgba(0,255,102,0.3);color:#00ff66;font-size:11px;font-weight:700;margin-bottom:14px;'>"
-                    + "<span style='width:8px;height:8px;border-radius:50%;background:#00ff66;display:inline-block;'></span> Онлайн сервера: " + online + " / " + maxPlayers + "</div><br>"
+                    + "<span style='width:8px;height:8px;border-radius:50%;background:#00ff66;display:inline-block;'></span> Онлайн сервера: " + online + " / " + maxPlayers + " &bull; Java 1.21+</div><br>"
                     + "<div style='display:inline-block;padding:4px;border-radius:20px;background:linear-gradient(135deg,#0055ff,#00ff66);margin-bottom:10px;'>"
                     + "<img id='av' src='" + mcHost + "/avatar/Steve/76' width='76' height='76' style='display:block;border-radius:16px;background:#080e1c;'></div>"
                     + "<h1 class='brand'>⚡ MIR-TIME</h1>"
@@ -168,14 +168,15 @@ public class WebCabinet {
                     + "<input type='password' name='password' placeholder='Ваш игровой пароль' required>"
                     + "<button class='btn green' type='submit'>Войти в кабинет ➔</button></form>"
                     + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;text-align:left;'>"
-                    + "<div onclick=\"navigator.clipboard.writeText('play.mir-time.ru');this.lastChild.innerText='Скопировано ✔'\" style='cursor:pointer;background:rgba(14,24,46,0.75);border:1px solid rgba(0,119,255,0.28);border-radius:12px;padding:10px;'>"
-                    + "<div style='font-size:10px;color:#637fa3;'>IP ДЛЯ ВХОДА (КЛИК)</div><div style='font-size:12px;font-weight:700;color:#00e5ff;'>play.mir-time.ru</div></div>"
-                    + "<div style='background:rgba(14,24,46,0.75);border:1px solid rgba(0,119,255,0.28);border-radius:12px;padding:10px;'>"
-                    + "<div style='font-size:10px;color:#637fa3;'>ВЕРСИЯ ИГРЫ</div><div style='font-size:12px;font-weight:700;color:#00ff66;'>Java 1.21+</div></div></div>"
+                    + "<div onclick=\"navigator.clipboard.writeText('mc.mir-time.ru');this.lastChild.innerText='Скопировано ✔'\" style='cursor:pointer;background:rgba(14,24,46,0.75);border:1px solid rgba(0,119,255,0.28);border-radius:12px;padding:10px;'>"
+                    + "<div style='font-size:10px;color:#637fa3;'>ОСНОВНОЙ IP (КЛИК)</div><div style='font-size:12px;font-weight:700;color:#00e5ff;'>mc.mir-time.ru</div></div>"
+                    + "<div onclick=\"navigator.clipboard.writeText('eu.mir-time.ru');this.lastChild.innerText='Скопировано ✔'\" style='cursor:pointer;background:rgba(14,24,46,0.75);border:1px solid rgba(0,119,255,0.28);border-radius:12px;padding:10px;'>"
+                    + "<div style='font-size:10px;color:#637fa3;'>ЕВРОПА / ПРОКСИ (КЛИК)</div><div style='font-size:12px;font-weight:700;color:#00ff66;'>eu.mir-time.ru</div></div></div>"
                     + footerHtml + "</div></body></html>";
             sendHtml(ex, loginHtml);
             return;
         }
+
         String realName = plugin.getDb().getString("users." + loggedUser + ".name", loggedUser);
         String lastIp = plugin.getDb().getString("users." + loggedUser + ".last-ip", "Неизвестно");
         String email = plugin.getDb().getString("users." + loggedUser + ".email", "");

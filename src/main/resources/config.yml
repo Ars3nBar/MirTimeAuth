@@ -24,7 +24,7 @@ email:
   enabled: false
   smtp-host: "smtp.yandex.ru"
   smtp-port: 465
-  username: "mirtime-server@yandex.ru"
+  username: "вашапочта"
   password: "пароль_приложения"
 
 lobby-clock:

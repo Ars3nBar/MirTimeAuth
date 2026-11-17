@@ -40,9 +40,9 @@ public class WebCabinet {
         if (server != null) server.stop(0);
     }
     private void handle(HttpExchange ex) throws IOException {
-        String notice = "https://mc-heads.net";
-        String loggedUser = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=";
-        String savedPass = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap";
+        String notice = "";
+        String loggedUser = null;
+        String savedPass = "";
 
         if ("POST".equalsIgnoreCase(ex.getRequestMethod())) {
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -111,6 +111,35 @@ public class WebCabinet {
                 }
             }
         }
+        String mcHost = "https://mc-heads.net";
+        String qrHost = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=";
+        String fontUrl = "https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap";
+
+        String css = "<style>@import url('" + fontUrl + "');"
+                + "*{box-sizing:border-box}body{margin:0;font-family:'Montserrat',sans-serif;background:#04070f;color:#eef6ff;min-height:100vh;"
+                + "display:flex;justify-content:center;align-items:center;padding:20px;"
+                + "background-image:radial-gradient(circle at 50% -10%,rgba(0,119,255,0.35),transparent 55%),"
+                + "linear-gradient(rgba(0,229,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.035) 1px,transparent 1px);"
+                + "background-size:100% 100%,34px 34px,34px 34px;}"
+                + ".panel{background:rgba(10,17,32,0.88);backdrop-filter:blur(18px);border:1px solid rgba(0,229,255,0.35);"
+                + "border-radius:24px;box-shadow:0 0 60px rgba(0,85,255,0.28),inset 0 0 24px rgba(0,229,255,0.05);padding:28px;width:100%;}"
+                + ".brand{font-size:28px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#0066ff,#00e5ff,#00ff66);"
+                + "-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;}"
+                + "input{width:100%;padding:13px 15px;margin:7px 0;border-radius:12px;border:1px solid #1d3563;"
+                + "background:rgba(5,10,20,0.92);color:#fff;font-family:inherit;font-size:13px;outline:none;transition:.25s;}"
+                + "input:focus{border-color:#00e5ff;box-shadow:0 0 16px rgba(0,229,255,0.3);}"
+                + ".btn{width:100%;padding:12px;border:none;border-radius:12px;font-family:inherit;font-weight:700;cursor:pointer;margin-top:8px;"
+                + "font-size:12px;letter-spacing:.6px;text-transform:uppercase;transition:.25s;background:linear-gradient(135deg,#0055ff,#00d4ff);color:#fff;}"
+                + ".btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,0.38);}"
+                + ".btn.green{background:linear-gradient(135deg,#00b84d,#00ff66);color:#031409;}"
+                + ".btn.red{background:linear-gradient(135deg,#b82e24,#ff4757);color:#fff;}"
+                + ".alert{padding:12px 14px;border-radius:12px;margin-bottom:14px;font-size:13px;font-weight:700;}"
+                + ".alert.ok{background:rgba(0,255,102,0.12);border:1px solid #00ff66;color:#00ff66;}"
+                + ".alert.err{background:rgba(255,71,87,0.12);border:1px solid #ff4757;color:#ff6b81;}"
+                + ".grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}@media(max-width:640px){.grid{grid-template-columns:1fr;}}"
+                + ".card{background:rgba(14,24,46,0.78);border:1px solid rgba(0,119,255,0.32);border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;}"
+                + ".card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:#00e5ff;}"
+                + ".badge{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(0,229,255,0.12);color:#00e5ff;margin:4px 4px 0 0;}</style>";
         if (loggedUser == null) {
             String loginHtml = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
                     + "<title>MIR-TIME | Личный кабинет</title>" + css + "</head><body>"
@@ -197,7 +226,7 @@ public class WebCabinet {
         if (raw == null || raw.isEmpty()) return map;
         for (String pair : raw.split("&")) {
             String[] kv = pair.split("=", 2);
-            if (kv.length == 2) map.put(URLDecoder.decode(kv[0], StandardCharsets.UTF_8), URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
+            if (kv.length == 2) map.put(URLDecoder.decode(kv, StandardCharsets.UTF_8), URLDecoder.decode(kv, StandardCharsets.UTF_8));
         }
         return map;
     }

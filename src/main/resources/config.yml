@@ -18,11 +18,18 @@ security:
 web:
   enabled: true
   port: 8085
-  public-host: "auto"
+  public-host: "auth.mir-time.ru"
 
 email:
   enabled: false
   smtp-host: "smtp.yandex.ru"
   smtp-port: 465
-  username: "ваша_почта"
+  username: "mirtime-server@yandex.ru"
   password: "пароль_приложения"
+
+lobby-clock:
+  enabled: true
+  slot: 8
+  name: "&#0055ff&l⚡ &#00E5FF&lМеню сервера &7(ПКМ)"
+  command: "menu"
+  only-spawn-world: true

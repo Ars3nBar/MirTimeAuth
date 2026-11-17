@@ -24,13 +24,19 @@ public class MailService {
             String user = plugin.getConfig().getString("email.username", "");
             String pass = plugin.getConfig().getString("email.password", "");
 
-            String html = "<div style='background:#050811;padding:32px;font-family:sans-serif;color:#eef6ff;text-align:center;'>"
-                    + "<div style='max-width:430px;margin:auto;background:#0a1120;border:1px solid #0066ff;border-radius:18px;padding:28px;box-shadow:0 0 30px rgba(0,102,255,0.25);'>"
-                    + "<h2 style='color:#00e5ff;margin:0 0 8px 0;letter-spacing:1px;'>⚡ MIR-TIME</h2>"
-                    + "<p style='color:#9ab2d4;font-size:14px;margin:0 0 18px 0;'>" + titleText + "</p>"
-                    + "<div style='background:#0f1930;border:1px solid #00ff66;border-radius:12px;padding:16px;font-size:30px;font-weight:900;letter-spacing:8px;color:#00ff66;'>"
-                    + code + "</div>"
-                    + "<p style='color:#5c7699;font-size:11px;margin:18px 0 0 0;'>Никому не сообщайте этот код. Если вы не запрашивали письмо, просто удалите его.</p>"
+            String html = "<div style='background:#050811;padding:36px 16px;font-family:Segoe UI,Arial,sans-serif;color:#eef6ff;text-align:center;'>"
+                    + "<div style='max-width:440px;margin:auto;background:linear-gradient(180deg,#0c162c 0%,#080e1d 100%);border:1px solid #0066ff;border-radius:20px;padding:30px;box-shadow:0 0 35px rgba(0,119,255,0.28);'>"
+                    + "<div style='display:inline-block;padding:6px 14px;border-radius:20px;background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.3);color:#00e5ff;font-size:11px;font-weight:bold;letter-spacing:1.5px;margin-bottom:12px;'>БЕЗОПАСНОСТЬ АККАУНТА</div>"
+                    + "<h1 style='color:#ffffff;font-size:26px;margin:0 0 8px 0;letter-spacing:1px;'>⚡ MIR-TIME</h1>"
+                    + "<p style='color:#9ab2d4;font-size:14px;line-height:1.5;margin:0 0 22px 0;'>" + titleText + "</p>"
+                    + "<div style='background:#060b16;border:2px dashed #00ff66;border-radius:14px;padding:18px 12px;margin:0 auto 14px auto;'>"
+                    + "<div style='font-size:11px;color:#6d89ad;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;'>Нажмите на код, чтобы выделить</div>"
+                    + "<span style='font-family:Consolas,monospace;font-size:34px;font-weight:900;letter-spacing:8px;color:#00ff66;user-select:all;-webkit-user-select:all;'>" + code + "</span>"
+                    + "</div>"
+                    + "<div style='background:rgba(0,102,255,0.12);border-radius:10px;padding:10px;font-size:12px;color:#00e5ff;margin-bottom:18px;'>"
+                    + "Команда для ввода в игре: <b>/2fa emailconfirm " + code + "</b></div>"
+                    + "<p style='color:#546e91;font-size:11px;margin:0;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;'>"
+                    + "Если вы не запрашивали этот код, просто проигнорируйте письмо.</p>"
                     + "</div></div>";
 
             try (SSLSocket sock = (SSLSocket) SSLSocketFactory.getDefault().createSocket(host, port);
